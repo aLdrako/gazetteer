@@ -2,12 +2,12 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
     <link href="favicon.ico" rel="icon" type="image/x-icon">
-    <link href="styles/reset.css" rel="stylesheet" type="text/css">
-    <link href="styles/style.css" rel="stylesheet" type="text/css">
+    <link href="styles/style.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
-    <link href="vendor/leaflet/leaflet.css" rel="stylesheet" type="text/css">
+    <link href="vendor/leaflet/leaflet.css" rel="stylesheet">
+    <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">  
     <title>Gazetteer</title>
 </head>
 <body>
@@ -17,33 +17,49 @@
     <div id="loading-spinner">
         <img id="loading-image-spinner" src="images/ajax-spinner.svg" alt="Loading..." />
     </div>
-    <header id="header">
-        <div class="flex">
-            <div id="logo-block"><h2>Gazetteer</h2></div>
-            <div id="search-block"><input type="search" ></div>
-            <div id="map-type-block">
-                <select name="map-style" id="map-style">
-                    <option value="mapbox/streets-v11">Streets</option>
-                    <option value="mapbox/satellite-streets-v11">Satellite Streets</option>
-                </select>
-            </div>
+    <nav id="navbar" class="navbar navbar-expand-sm fixed-top navbar-dark bg-dark">
+        <a class="navbar-brand" href="#"><h2>Gazetteer</h2></a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarCollapse">
+          <ul class="navbar-nav mr-auto">
+            <li class="nav-item active">
+              <a class="nav-link" href="https://alexgo.co.uk/"><button type="button" class="btn btn-outline-light">Home<span class="sr-only">(Home Page)</span></button></a>
+            </li>
+          </ul>
+          <form class="form-inline mt-2 mt-sm-0" id="countrySearchForm">
+            <input class="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search" list="countryList" id="countrySearch">
+            <datalist id="countryList">
+            </datalist>
+          </form>
         </div>
-    </header>
-    <section id="main">
-        <!-- MAP -->
-        <div id="mapId"></div>
-    </section>
-    <footer id="footer">
-        <div class="flex">
-            <div id="capital"></div>
-            <div id="population"></div>
-            <div id="weather"></div>
-            <div id="currency"></div>
+    </nav>
+    <div class="collapse fixed-bottom" id="collapseCountryInfo">
+      <div class="container-fluid">
+        <div class="row py-1">
+          <div class="col-auto"><img src="https://restcountries.eu/data/gbr.svg" id="countryFlag" class="img-fluid" alt="Flag image"></div>
+          <div class="col-auto"><h4 id="countryName"></h4></div>
+          <div class="col-auto mr-auto">
+            <span data-toggle="tooltip" title="Hide panel" data-placement="right">
+              <button class="btn btn-outline-light btn-sm" href="#" type="button" data-toggle="collapse" data-target="#collapseCountryInfo" aria-expanded="false" aria-controls="collapseCountryInfo">
+                ▼
+              </button>
+            </span>
+          </div>
+          <div class="w-100"></div>
+          <div class="col caption">Capital <span id="capital" class="pl-1"></span></div>
+          <div class="col caption">Population <span id="population" class="pl-1"></span></div>
+          <div class="col caption">Area <span id="area" class="pl-1"></span> <span>km<sup>2</sup></span></div>
+          <div class="col caption">100 USD <span id="currency" class="pl-1"></span></div>
         </div>
-    </footer>
-    <script src="vendor/jquery/jquery-3.5.1.min.js" type="application/javascript"></script>
-    <script src="js/script.js" type="application/javascript"></script>
-    <script src="vendor/leaflet/leaflet.js" type="application/javascript"></script>
-    <script src="js/map.js" type="application/javascript"></script>
+      </div> 
+    </div>
+    <main id="mapId" role="main" class="container-fluid"></main>
+    <script src="vendor/jquery/jquery-3.5.1.min.js"></script>
+    <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="vendor/leaflet/leaflet.js"></script>
+    <script src="js/script.js"></script>
+    <script src="js/map.js"></script>
 </body>
 </html>
