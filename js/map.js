@@ -131,6 +131,7 @@ const onMapClick = async (e) => {
     toggleSpinner(false);
   }
 
+  // Proceed only if new country is selected (exclude the same country or undefined)
   if (curCountry != countryCodeA3 && countryCodeA3 != undefined) {
     try {
       ({ countryCodeA2, currency } = await getCountryInfo(countryCodeA3));
