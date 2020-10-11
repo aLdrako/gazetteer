@@ -1,10 +1,8 @@
 // Variables
 let geojson = undefined;
 let markers = [];
-let locationMarker = undefined; // marker on location found
-let locationArea = undefined; // selected area on location found
 let curCountry = undefined; // used as switch to avoid fetching data if the same country is selected
-let search = false; // used as a switch when searching country from the search field
+let searchBy = "click"; // used as a switch when searching country from the search field
 let selCountry = undefined; // selected country in search field
 
 accessToken =
@@ -14,6 +12,7 @@ mapboxUrl =
 mapboxAttribution =
   'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>';
 
+// Mapbop layers
 let streets = L.tileLayer(mapboxUrl, {
     id: "mapbox/streets-v11",
     tileSize: 512,
@@ -58,48 +57,18 @@ let layerStyle = {
   fillOpacity: 0.2,
 };
 
-// Circle layer style on location found
-let locationAreaStyle = {
-  color: "rgb(255, 102, 0)",
-  fillColor: "rgb(255, 102, 0)",
-  fillOpacity: 0.5,
+// Popup style
+let popUpOptions = {
+  maxWidth: "400",
+  width: "200",
+  className: "popupCustom",
 };
-
-// New icon for current location marker
-let locationIcon = L.icon({
-  iconUrl: './vendor/leaflet/images/location-marker-icon.png',
-  iconSize:     [48, 48],
-  iconAnchor:   [24, 48],
-  popupAnchor:  [-1, -36]
-});
 
 // Initializing map
 let myMap = L.map("mapId", { layers: [streets] }).setView([51.505, -0.09], 5);
+
+// Adding layer change controls
 L.control.layers(mapboxLayers).addTo(myMap);
-
-// Locate current position of device --- TEMPORARY DISABLED
-myMap.locate({ setView: false, maxZoom: 16 });
-
-// Handling event on location found
-const onLocationFound = (e) => {
-  let radius = e.accuracy;
-
-  locationMarker = L.marker(e.latlng, {icon: locationIcon})
-    .addTo(myMap)
-    .bindPopup(`Your are within ${radius} meters from this point`)
-    .openPopup();
-
-  locationArea = L.circle(e.latlng, locationAreaStyle, radius).addTo(myMap);
-};
-
-myMap.on("locationfound", onLocationFound);
-
-// If location found failed
-const onLocationError = (e) => {
-  alert(e.message);
-};
-
-myMap.on("locationerror", onLocationError);
 
 // Fit selected country to bounds
 const fitMapBoundsOnClick = (e) => {
@@ -114,6 +83,29 @@ const onEachFeature = (feature, layer) => {
   myMap.fitBounds(layer.getBounds());
 };
 
+// Get country by geolocation
+const locationSuccess = (obj) => {
+  let coords = obj.coords;
+  searchBy = "geolocation";
+  onMapClick(coords);
+};
+
+const locationError = (err) => {
+  console.warn(`${err.code}: ${err.message}`);
+};
+
+let options = {
+  enableHighAccuracy: false,
+  timeout: 5000,
+  maximumAge: 0,
+};
+
+navigator.geolocation.getCurrentPosition(
+  locationSuccess,
+  locationError,
+  options
+);
+
 // Handle event on map click
 const onMapClick = async (e) => {
   let countryCodeA3,
@@ -122,40 +114,55 @@ const onMapClick = async (e) => {
     citiesCoords,
     citiesPopulation,
     citiesNames,
+    covidData,
     feature;
 
-  if (!search) {
+  if (searchBy == "click") {
     countryCodeA3 = await getGeocodeData(e.latlng.lat, e.latlng.lng);
-  } else {
+  } else if (searchBy == "search") {
     countryCodeA3 = await searchCountry(e); // passing country name
-    search = false;
+    searchBy = "click";
+  } else if (searchBy == "geolocation") {
+    countryCodeA3 = await getGeocodeData(e.latitude, e.longitude);
+    searchBy = "click";
   }
 
-  try {
-    ({ countryCodeA2, currency } = await getCountryInfo(countryCodeA3));
-  } catch (err) {
-    console.log(err);
+  if (curCountry == countryCodeA3) {
+    toggleSpinner(false);
   }
 
-  try {
-    ({ citiesCoords, citiesPopulation, citiesNames } = await getCountryCities(
-      countryCodeA2
-    ));
-  } catch (err) {
-    console.log(err);
-  }
+  if (curCountry != countryCodeA3 && countryCodeA3 != undefined) {
+    try {
+      ({ countryCodeA2, currency } = await getCountryInfo(countryCodeA3));
+    } catch (err) {
+      console.log(err);
+    }
 
-  try {
-    feature = await getCountryLayer(countryCodeA3);
-  } catch (err) {
-    console.log(err);
-  }
+    try {
+      ({ citiesCoords, citiesPopulation, citiesNames } = await getCountryCities(
+        countryCodeA2
+      ));
+    } catch (err) {
+      console.log(err);
+    }
 
-  getCurrency(currency);
+    try {
+      covidData = await getCovidData(countryCodeA3);
+    } catch (err) {
+      console.log(err);
+    }
 
-  if (curCountry != countryCodeA3) {
-    // Clearing previously selected outlines, markers, etc. // , locationMarker, locationArea
+    try {
+      feature = await getCountryLayer(countryCodeA3);
+    } catch (err) {
+      console.log(err);
+    }
+
+    // Clearing previously selected outlines, markers, etc.
     resetDetails(geojson, markers);
+
+    // Get currency data
+    getCurrency(currency);
 
     // Setting country outline
     geojson = L.geoJSON(feature, {
@@ -165,9 +172,13 @@ const onMapClick = async (e) => {
 
     addMarkers(citiesNames, citiesCoords, citiesPopulation);
 
+    // Get ids of famous places located in specific capital
+    getPlacesId(citiesCoords[0][0], citiesCoords[0][1]);
+
     curCountry = countryCodeA3;
   }
 
+  // Toggle visibility of content with country info
   $("#collapseCountryInfo").collapse("show");
 };
 
@@ -177,12 +188,15 @@ myMap.on("click", onMapClick);
 // Get country by search field
 $("#countrySearch").on("change", () => {
   selCountry = $(`#countrySearch`).val();
-  search = true;
+  searchBy = "search";
   onMapClick(selCountry);
 });
 
 // Get data for country outlines
 const getCountryLayer = async (codeA3) => {
+  if (codeA3 != undefined) {
+    toggleSpinner(true);
+  }
   let data = await fetch(`./php/countries/countries_large.geo.json`);
   let json = await data.json();
 
@@ -206,6 +220,7 @@ const getCountryList = async () => {
 
 getCountryList();
 
+// Get country code using search field
 const searchCountry = async (country) => {
   try {
     let data = await fetch(`php/searchCountry.php?country=${country}`);
@@ -217,7 +232,7 @@ const searchCountry = async (country) => {
       throw "No response from the server!";
     }
   } catch (err) {
-    console.log("Wrong data passed. More details > ", err);
+    console.log("Error > ", err);
   }
 };
 
@@ -233,7 +248,7 @@ const getGeocodeData = async (lat, lng) => {
       throw "No response from the server!";
     }
   } catch (err) {
-    console.log("Wrong data passed. More details > ", err);
+    console.log("Error > ", err);
   }
 };
 
@@ -254,8 +269,8 @@ const getCountryInfo = async (codeA3) => {
 
       $("#countryName").html(countryName);
       $("#capital").html(capital);
-      $("#population").html(population);
-      $("#area").html(area);
+      $("#population").html(numberWithCommas(population));
+      $("#area").html(numberWithCommas(area));
       $("#countryFlag").attr("src", flag);
 
       return {
@@ -266,44 +281,28 @@ const getCountryInfo = async (codeA3) => {
       throw "No response from the server!";
     }
   } catch (err) {
-    console.log("Wrong data passed. More details > ", err);
+    console.log("Error > ", err);
   }
 };
 
 // Get cities list with details
 const getCountryCities = async (codeA2) => {
-  let data = await fetch(`php/countryCities.php?country=${codeA2}`);
-  let json = await data.json();
+  try {
+    let data = await fetch(`php/countryCities.php?country=${codeA2}`);
+    if (data.ok) {
+      let json = await data.json();
 
-  let capitalCoord = [],
-    citiesCoords = [];
-  let capitalPopulation = [],
-    citiesPopulation = [];
-  let capitalNames = [],
-    citiesNames = [];
+      let citiesNames = json.citiesNames;
+      let citiesPopulation = json.citiesPopulation;
+      let citiesCoords = json.citiesCoords;
 
-  json.forEach((el) => {
-    if (el.fcode == "PPLC" && el.countryCode == codeA2) {
-      // getting capital info
-      capitalCoord = [el["lat"], el["lng"]];
-      capitalPopulation = el.population;
-      capitalNames = el.toponymName;
-    } else if (
-      el.fcode == "PPLA" ||
-      (el.fcode == "PPLA2" && el.countryCode == codeA2)
-    ) {
-      // getting all other cities info
-      citiesCoords.push([el["lat"], el["lng"]]);
-      citiesPopulation.push(el.population);
-      citiesNames.push(el.toponymName);
+      return { citiesCoords, citiesPopulation, citiesNames };
+    } else {
+      throw "No response from the server!";
     }
-  });
-
-  citiesCoords.unshift(capitalCoord);
-  citiesPopulation.unshift(capitalPopulation);
-  citiesNames.unshift(capitalNames);
-
-  return { citiesCoords, citiesPopulation, citiesNames };
+  } catch (err) {
+    console.log("Error > ", err);
+  }
 };
 
 // Get current weather of the city/capital and coordinates
@@ -312,14 +311,18 @@ const getWeather = async (lat, lng) => {
     let data = await fetch(`php/weather.php?lat=${lat}&lng=${lng}`);
     if (data.ok) {
       let json = await data.json();
-      let temp = (json.current.temp - 273.15).toFixed(2);
-      return temp;
+      let temp = json.current.temp;
+      let humidity = json.current.humidity;
+      let wind = json.current.wind_speed;
+      let icon = json.current.weather[0].icon;
+      return { temp, humidity, wind, icon };
     } else {
       throw "No response from the server!";
     }
   } catch (err) {
-    console.log("Wrong data passed. More details > ", err);
+    console.log("Error > ", err);
   }
+  return 100;
 };
 
 // Get currency and exchange rate for selected country
@@ -337,7 +340,104 @@ const getCurrency = async (cur) => {
       throw "No response from the server!";
     }
   } catch (err) {
-    console.log("Wrong data passed. More details > ", err);
+    console.log("Error > ", err);
+  }
+};
+
+// Get current data of covid cases in specific country
+const getCovidData = async (codeA3) => {
+  try {
+    let data = await fetch(`php/covid.php?country=${codeA3}`);
+    if (data.ok) {
+      let json = await data.json();
+      let confirmed = json.confirmed;
+      let active = json.active;
+      let recovered = json.recovered;
+      let deaths = json.deaths;
+      let difference = json.confirmed_diff;
+
+      let activePercent = Math.round(100 / (confirmed / active));
+      let recoveredPercent = Math.round(100 / (confirmed / recovered));
+      let deathsPercent = Math.round(100 / (confirmed / deaths));
+
+      $("#activeCovidBar")
+        .width(`${activePercent}%`)
+        .attr("aria-valuenow", activePercent);
+      $("#recoveredCovidBar")
+        .width(`${recoveredPercent}%`)
+        .attr("aria-valuenow", recoveredPercent);
+      $("#deathsCovidBar")
+        .width(`${deathsPercent}%`)
+        .attr("aria-valuenow", deathsPercent);
+
+      $("#confirmedCovid").html(numberWithCommas(confirmed));
+      $("#activeCovid").html(numberWithCommas(active));
+      $("#recoveredCovid").html(numberWithCommas(recovered));
+      $("#deathsCovid").html(numberWithCommas(deaths));
+      $("#differenceCovid").html(numberWithCommas(`+${difference}`));
+
+      return json;
+    } else {
+      throw "No response from the server!";
+    }
+  } catch (err) {
+    console.log("Error > ", err);
+  }
+};
+
+// Get famous places ids located in capital
+const getPlacesId = async (lat, lng) => {
+  try {
+    let data = await fetch(`php/openTripMap.php?lon=${lng}&lat=${lat}`);
+    if (data.ok) {
+      let json = await data.json();
+      let i = 0;
+
+      while (i < json.xid.length) {
+        await getPlacesInfo(json.xid[i], i);
+        i++;
+      }
+      return json;
+    } else {
+      throw "No response from the server!";
+    }
+  } catch (err) {
+    console.log("Error > ", err);
+  }
+};
+
+// Pass places ids to get detailed info about those places
+const getPlacesInfo = async (id, i) => {
+  try {
+    let data = await fetch(`php/openTripMapXid.php?xid=${id}`);
+    if (data.ok) {
+      let json = await data.json();
+
+      let name = json.name;
+      let preview = json.preview;
+      let link = json.link;
+      let text = json.text;
+
+      let activeClass = i == 0 ? "carousel-item active" : "carousel-item";
+
+      $("#carousel-inner").append(`
+        <div class="${activeClass}">
+          <div class="media">
+            <img style="height: 90px;" src="${preview}" class="align-self-center mr-3 img-thumbnail" alt="${name}">
+            <div class="media-body" style="height: 90px;">
+              <h5 class="my-0"><a href="${link}" target="_blank">${name}</a></h5>
+              <p style="font-size: .9rem;">${text}</p>
+            </div>
+          </div>
+        </div>
+      `);
+
+      return json;
+    } else {
+      throw "No response from the server!";
+    }
+  } catch (err) {
+    console.log("Error > ", err);
   }
 };
 
@@ -345,29 +445,48 @@ const getCurrency = async (cur) => {
 const addMarkers = async (citiesNames, citiesCoords, citiesPopulation) => {
   let i = 0;
   let marker = undefined;
+
   try {
-    while (i < citiesNames.length && i < 3) {
+    while (i < citiesNames.length && i < 5) {
+      // Populate only first 5 cities
       if (citiesCoords.length != 1) {
-        let temp = await getWeather(citiesCoords[i][0], citiesCoords[i][1]);
+        let { temp, humidity, wind, icon } = await getWeather(
+          citiesCoords[i][0],
+          citiesCoords[i][1]
+        );
+        let capital = i == 0 ? `<small class="text-muted">Capital</small>` : ``;
+        let popUpMsg = `
+        <h5>${citiesNames[i]} ${capital}</h5>
+        <hr class="my-1">
+        <div class="media" id="popupCustom">
+          <div class="media-body text-nowrap">
+              <span class="badge badge-light">Temp</span> ${temp} °C <br>
+              <span class="badge badge-light">Humidity</span> ${humidity}% <br>
+              <span class="badge badge-light">Wind</span> ${wind} m/s
+          </div>
+          <img src="https://openweathermap.org/img/wn/${icon}.png" alt="Weather Icon">
+        </div>
+        <hr class="my-1">
+        Population: <b>${numberWithCommas(citiesPopulation[i])}</b>
+        `; // @2x
         marker = L.marker(citiesCoords[i]).addTo(myMap);
-        marker.bindPopup(`
-        <b>${citiesNames[i]}</b><br>
-        Temp:  <b>${temp} °C</b><br>
-        Population: <b>${citiesPopulation[i]}</b>
-      `);
-        i++;
+        marker.bindPopup(popUpMsg, popUpOptions);
+
+        $(`#city-${i}`).html(citiesNames[i]);
         markers.push(marker);
+        i++;
       } else {
         i++;
       }
     }
+    toggleSpinner(false);
   } catch (err) {
     console.log(err);
   }
 };
 
 // Clearing previously selected outlines, markers, etc.
-const resetDetails = (geojson, markers, ...args) => {
+const resetDetails = (geojson, markers) => {
   if (geojson != undefined) {
     geojson.clearLayers();
     hover = true;
@@ -377,7 +496,37 @@ const resetDetails = (geojson, markers, ...args) => {
     if (element != undefined) element.remove();
   });
 
-  args.forEach((element) => {
-    if (element != undefined) element.remove();
-  });
+  markers.length = 0;
+
+  $("#carousel-inner").html("");
+  for (let i = 0; i < 5; i++) {
+    $(`#city-${i}`).html("");
+  }
 };
+
+// Format big numbers
+const numberWithCommas = (num) =>
+  num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
+$("#cities button").on("click", function () {
+  let id = $(this).attr("id");
+  try {
+    if (id == "city-0") {
+      markers[0].openPopup();
+    }
+    if (id == "city-1") {
+      markers[1].openPopup();
+    }
+    if (id == "city-2") {
+      markers[2].openPopup();
+    }
+    if (id == "city-3") {
+      markers[3].openPopup();
+    }
+    if (id == "city-4") {
+      markers[4].openPopup();
+    }
+  } catch (err) {
+    console.log(err);
+  }
+});
