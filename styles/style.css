@@ -51,12 +51,21 @@ body {
 
 /* Leaflet override */
 
-.popupCustom .leaflet-popup-tip,
-.popupCustom .leaflet-popup-content-wrapper {
+.popupCity .leaflet-popup-tip,
+.popupCity .leaflet-popup-content-wrapper {
   /* background-color: #f8f9fa;
   color: #212529; */
   background-color: rgb(52, 58, 64);
   color: white;
+  max-width: "400px";
+  width: "200px";
+  font-size: .9rem;
+}
+
+.popupCapital .leaflet-popup-tip,
+.popupCapital .leaflet-popup-content-wrapper {
+  background-color: #f8f9fa;
+  color: #212529;
   font-size: .9rem;
 }
 
