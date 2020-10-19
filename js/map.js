@@ -57,12 +57,32 @@ let layerStyle = {
   fillOpacity: 0.2,
 };
 
-// Popup style
-let popUpOptions = {
-  maxWidth: "400",
-  width: "200",
-  className: "popupCustom",
+// Defining popup options, style
+let popUpOptionsCity = {
+  className: "popupCity",
 };
+
+let popUpOptionsCapital = {
+  className: "popupCapital",
+};
+
+// Defining custom markers - Leaflet.ExtraMarkers
+let cityMarker = L.ExtraMarkers.icon({
+  icon: "fa-building",
+  iconColor: "white",
+  markerColor: "#333",
+  prefix: "fa",
+  svg: true,
+});
+
+let capitalMarker = L.ExtraMarkers.icon({
+  icon: "fa-city",
+  iconColor: "#333",
+  markerColor: "white",
+  shape: "square",
+  prefix: "fa",
+  svg: true,
+});
 
 // Initializing map
 let myMap = L.map("mapId", { layers: [streets] }).setView([51.505, -0.09], 5);
@@ -154,7 +174,7 @@ const onMapClick = async (e) => {
     }
 
     try {
-      feature = await getCountryLayer(countryCodeA3);
+      feature = await getCountryFeature(countryCodeA3);
     } catch (err) {
       console.log(err);
     }
@@ -193,19 +213,17 @@ $("#countrySearch").on("change", () => {
   onMapClick(selCountry);
 });
 
-// Get data for country outlines
-const getCountryLayer = async (codeA3) => {
+// Get country feature for outline
+const getCountryFeature = async (codeA3) => {
   if (codeA3 != undefined) {
     toggleSpinner(true);
   }
-  let data = await fetch(`./php/countries/countries_large.geo.json`);
+  let data = await fetch(
+    `/Projects/Gazetteer/php/getCountryFeature.php?code=${codeA3}`
+  );
   let json = await data.json();
 
-  for (let key in json.features) {
-    if (codeA3 === json.features[key].properties.ISO_A3) {
-      return json.features[key];
-    }
-  }
+  return json;
 };
 
 // Populate datalist with countries
@@ -456,22 +474,28 @@ const addMarkers = async (citiesNames, citiesCoords, citiesPopulation) => {
           citiesCoords[i][1]
         );
         let capital = i == 0 ? `<small class="text-muted">Capital</small>` : ``;
+        let badge = i == 0 ? "badge-dark" : "badge-light";
+        popUpOption = i == 0 ? popUpOptionsCapital : popUpOptionsCity;
         let popUpMsg = `
         <h5>${citiesNames[i]} ${capital}</h5>
         <hr class="my-1">
         <div class="media" id="popupCustom">
           <div class="media-body text-nowrap">
-              <span class="badge badge-light">Temp</span> ${temp} °C <br>
-              <span class="badge badge-light">Humidity</span> ${humidity}% <br>
-              <span class="badge badge-light">Wind</span> ${wind} m/s
+              <span class="badge ${badge}">Temp</span> ${temp} °C <br>
+              <span class="badge ${badge}">Humidity</span> ${humidity}% <br>
+              <span class="badge ${badge}">Wind</span> ${wind} m/s
           </div>
           <img src="https://openweathermap.org/img/wn/${icon}.png" alt="Weather Icon">
         </div>
         <hr class="my-1">
         Population: <b>${numberWithCommas(citiesPopulation[i])}</b>
         `; // @2x
-        marker = L.marker(citiesCoords[i]).addTo(myMap);
-        marker.bindPopup(popUpMsg, popUpOptions);
+        marker =
+          i == 0
+            ? L.marker(citiesCoords[i], { icon: capitalMarker })
+            : L.marker(citiesCoords[i], { icon: cityMarker });
+        marker.addTo(myMap);
+        marker.bindPopup(popUpMsg, popUpOption);
 
         $(`#city-${i}`).html(citiesNames[i]);
         markers.push(marker);
