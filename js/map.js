@@ -441,13 +441,9 @@ const getPlacesInfo = async (id, i) => {
 
       $("#carousel-inner").append(`
         <div class="${activeClass}">
-          <div class="media">
-            <img style="height: 90px;" src="${preview}" class="align-self-center mr-3 img-thumbnail" alt="${name}">
-            <div class="media-body" style="height: 90px;">
-              <h5 class="my-0"><a href="${link}" target="_blank">${name}</a></h5>
-              <p style="font-size: .9rem;">${text}</p>
-            </div>
-          </div>
+            <a href="${link}" target="_blank"><button type="button" class="btn btn-outline-light">${name}</button></a><hr>
+            <img style="max-width: 250px; max-height: 250px;" align="left" src="${preview}" class="align-self-center mr-3 img-thumbnail" alt="${name}">
+            ${text}
         </div>
       `);
 
