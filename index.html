@@ -16,9 +16,9 @@
     <div id="loading">
         <img id="loading-image" src="images/ajax-loader.gif" alt="Loading..." />
     </div>
-    <nav id="navbar" class="navbar navbar-expand-sm fixed-top navbar-dark bg-dark">
-        <a class="navbar-brand" href="#"><h2>Gazetteer</h2></a>
-        <div id="spinner" class="spinner-border text-light d-none" role="status">
+    <nav id="navbar" class="navbar navbar-expand-sm fixed-top navbar-dark shadow">
+        <a class="navbar-brand text-dark" href="#"><h2>Gazetteer</h2></a>
+        <div id="spinner" class="spinner-border text-dark d-none" role="status">
           <span class="sr-only">Loading...</span>
         </div>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
@@ -40,18 +40,15 @@
     <div class="collapse fixed-bottom" id="collapseCountryInfo">
       <div class="container-fluid">
         <div class="row justify-content-center my-1">
-          <div class="col-auto"><img src="https://restcountries.eu/data/gbr.svg" id="countryFlag" class="img-fluid" alt="Flag image"></div>
-          <div class="col-auto"><h4 id="countryName"></h4></div>
-          <div class="col-auto">
-            <!-- <span data-toggle="tooltip" title="Hide panel" data-placement="right"> -->
-              <button class="btn btn-outline-light btn-sm" href="#" type="button" data-toggle="collapse" data-target="#collapseCountryInfo" aria-expanded="false" aria-controls="collapseCountryInfo">
-                ▼
-              </button>
-            <!-- </span> -->
+          <div class="col-auto"><img src="https://restcountries.eu/data/gbr.svg" id="countryFlag" class="img-fluid" alt="Flag image">
+            <button class="btn btn-outline-light btn-sm" href="#" type="button" data-toggle="collapse" data-target="#collapseCountryInfo" aria-expanded="false" aria-controls="collapseCountryInfo">
+              Hide ▼
+            </button>
           </div>
+          <div class="col-auto"><h4 id="countryName"></h4></div>
           <div class="w-100"></div>
           <div class="col-auto mt-2">
-            <div class="container-fluid">
+            <div class="container">
               <div class="row justify-content-center">
                 <div class="col-auto">
                   <ul class="nav nav-pills mb-2" id="pills-tab" role="tablist">
@@ -62,9 +59,6 @@
                       <a class="btn btn-dark btn-sm mr-1" id="pills-cities-tab" data-toggle="pill" href="#pills-cities" role="tab" aria-controls="pills-cities" aria-selected="false">Cities List</a>
                     </li>
                     <li class="nav-item" role="presentation">
-                      <a class="btn btn-dark btn-sm mr-1" id="pills-places-tab" data-toggle="pill" href="#pills-places" role="tab" aria-controls="pills-places" aria-selected="false">Places</a>
-                    </li>
-                    <li class="nav-item" role="presentation">
                       <a class="btn btn-dark btn-sm mr-1" id="pills-covid-tab" data-toggle="pill" href="#pills-covid" role="tab" aria-controls="pills-covid" aria-selected="false">COVID-19</a>
                     </li>
                   </ul>
@@ -73,29 +67,29 @@
             </div>
             <div class="tab-content" id="pills-tabContent">
               <div class="tab-pane fade show active" id="pills-info" role="tabpanel" aria-labelledby="pills-info-tab">
-                <div class="container-fluid">
-                  <div class="row justify-content-center">
-                    <div class="col-auto mb-1">
-                      <button type="button" class="btn btn-dark">
-                        <span class="badge badge-light">Capital</span> <span id="capital"></span>
+                <div class="container">
+                  <div class="row justify-content-between">
+                    <div class="col col-sm-3">
+                      <button type="button" class="btn btn-dark btn-sm">
+                        <span class="badge badge-light">Capital</span> <span id="capital">London</span>
                         <span class="sr-only">Capital</span>
                       </button>
                     </div>
-                    <div class="col-auto mb-1">
-                      <button type="button" class="btn btn-dark">
-                        <span class="badge badge-light">Population</span> <span id="population"></span>
+                    <div class="col col-sm-3">
+                      <button type="button" class="btn btn-dark btn-sm">
+                        <span class="badge badge-light">Population</span> <span id="population">65,110,000</span>
                         <span class="sr-only">Population</span>
                       </button>
                     </div>
-                    <div class="col-auto mb-1">
-                      <button type="button" class="btn btn-dark">
-                        <span class="badge badge-light">Area (km<sup>2</sup>)</span> <span id="area"></span>
+                    <div class="col col-sm-3">
+                      <button type="button" class="btn btn-dark btn-sm">
+                        <span class="badge badge-light">Area (km<sup>2</sup>)</span> <span id="area">242,900</span>
                         <span class="sr-only">Area</span>
                       </button>
                     </div>
-                    <div class="col-auto mb-1">
-                      <button type="button" class="btn btn-dark">
-                        <span class="badge badge-light">100 USD</span> <span id="currency"></span>
+                    <div class="col col-sm-3">
+                      <button type="button" class="btn btn-dark btn-sm">
+                        <span class="badge badge-light">100 USD</span> <span id="currency">73.737 GBP</span>
                         <span class="sr-only">Currency</span>
                       </button>
                     </div>
@@ -103,87 +97,64 @@
                 </div>
               </div>
               <div class="tab-pane fade" id="pills-cities" role="tabpanel" aria-labelledby="pills-cities-tab">
-                <div class="container-fluid">
+                <div class="container">
                   <div class="row justify-content-center">
-                    <div class="col-auto">
+                    <div class="col col-sm-auto">
                       <div id="cities" class="btn-toolbar" role="toolbar" aria-label="Cities">
-                        <div class="btn-group mr-2 mb-1" role="group" aria-label="First group">
+                        <div class="btn-group mr-1 mb-2" role="group" aria-label="First group">
                           <span data-toggle="tooltip" title="Capital" data-placement="top">
-                            <button id="city-0" type="button" class="btn btn-outline-light"></button>
+                            <button id="city-0" type="button" class="btn btn-outline-light">London</button>
                           </span>
                         </div>
-                        <div class="btn-group mr-1 mb-1" role="group" aria-label="Second group">
-                          <button id="city-1" type="button" class="btn btn-dark"></button>
-                          <button id="city-2" type="button" class="btn btn-dark"></button>
+                        <div class="btn-group mr-1 mb-2" role="group" aria-label="Second group">
+                          <button id="city-1" type="button" class="btn btn-dark">Birmingham</button>
+                          <button id="city-2" type="button" class="btn btn-dark">Liverpool</button>
                         </div>
                         <div class="btn-group mb-1" role="group" aria-label="Third group">
-                          <button id="city-3" type="button" class="btn btn-dark"></button>
-                          <button id="city-4" type="button" class="btn btn-dark"></button>
+                          <button id="city-3" type="button" class="btn btn-dark">Sheffield</button>
+                          <button id="city-4" type="button" class="btn btn-dark">Edinburgh</button>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-              <div class="tab-pane fade" id="pills-places" role="tabpanel" aria-labelledby="pills-places-tab">
-                <div class="container-sm">
-                  <div class="row justify-content-center">
-                    <div class="col-auto">
-                      <!-- <div id="carouselPlaces" class="carousel slide mb-1" data-ride="carousel">
-                        <div class="carousel-inner" id="carousel-inner">
-                          
-                        </div>
-                        <a class="carousel-control-prev" href="#carouselPlaces" role="button" data-slide="prev">
-                          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                          <span class="sr-only">Previous</span>
-                        </a>
-                        <a class="carousel-control-next" href="#carouselPlaces" role="button" data-slide="next">
-                          <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                          <span class="sr-only">Next</span>
-                        </a>
-                      </div> -->
-                      <button type="button" class="btn btn-light" data-toggle="modal" data-target="#placesModal">
-                        Show famous places in capital
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
               <div class="tab-pane fade" id="pills-covid" role="tabpanel" aria-labelledby="pills-covid-tab">
-                <div class="container-fluid">
+                <div class="container">
                   <div class="row justify-content-center">
-                    <div class="col-auto mb-2">
-                        <button type="button" class="btn btn-dark">
-                          <span class="badge badge-danger">Confirmed</span> <span id="confirmedCovid"></span> 
-                          <small class="text-muted" id="differenceCovid"></small>
+                    <div class="col col-sm-3">
+                        <button type="button" class="btn btn-dark btn-sm">
+                          <span class="badge badge-danger">Confirmed</span> <span id="confirmedCovid">813,451 +2000</span> 
+                          <!-- <small class="text-muted" id="differenceCovid"></small> -->
                           <span class="sr-only">Confirmed</span>
                         </button>
                     </div>
-                    <div class="col-auto mb-2">
-                      <button type="button" class="btn btn-dark">
-                        <span class="badge badge-warning">Active</span> <span id="activeCovid"></span>
+                    <div class="col col-sm-3">
+                      <button type="button" class="btn btn-dark btn-sm">
+                        <span class="badge badge-warning">Active</span> <span id="activeCovid">766,362</span>
                         <span class="sr-only">Active</span>
                       </button>
                     </div>
-                    <div class="col-auto mb-2">
-                      <button type="button" class="btn btn-dark">
-                        <span class="badge badge-success">Recovered</span> <span id="recoveredCovid"></span>
+                    <div class="col col-sm-3">
+                      <button type="button" class="btn btn-dark btn-sm">
+                        <span class="badge badge-success">Recovered</span> <span id="recoveredCovid">2,652</span>
                         <span class="sr-only">Recovered</span>
                       </button>
                     </div>
-                    <div class="col-auto mb-2">
-                      <button type="button" class="btn btn-dark">
-                        <span class="badge badge-secondary">Deaths</span> <span id="deathsCovid"></span>
+                    <div class="col col-sm-3">
+                      <button type="button" class="btn btn-dark btn-sm">
+                        <span class="badge badge-secondary">Deaths</span> <span id="deathsCovid">44,437</span>
                         <span class="sr-only">Deaths</span>
                       </button>
                     </div>
                   </div>
                   <div class="w-100"></div>
-                  <div class="progress mb-1">
+                  <!-- Progress bar for covid data -->
+                  <!-- <div class="progress mb-1">
                     <div class="progress-bar progress-bar-striped progress-bar-animated bg-warning" id="activeCovidBar" role="progressbar" aria-valuenow="15" aria-valuemin="0" aria-valuemax="100"></div>
                     <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" id="recoveredCovidBar" role="progressbar" aria-valuenow="30" aria-valuemin="0" aria-valuemax="100"></div>
                     <div class="progress-bar progress-bar-striped progress-bar-animated bg-secondary" id="deathsCovidBar" role="progressbar" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100"></div>
-                  </div>
+                  </div> -->
                 </div>
               </div>
             </div>

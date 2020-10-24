@@ -194,7 +194,7 @@ const onMapClick = async (e) => {
     addMarkers(citiesNames, citiesCoords, citiesPopulation);
 
     // Get ids of famous places located in specific capital
-    getPlacesId(citiesCoords[0][0], citiesCoords[0][1]);
+    // getPlacesId(citiesCoords[0][0], citiesCoords[0][1]);
 
     curCountry = countryCodeA3;
   }
@@ -230,11 +230,16 @@ const getCountryFeature = async (codeA3) => {
 const getCountryList = async () => {
   let data = await fetch("./php/countries/countries_small.geo.json");
   let json = await data.json();
+  let countryList = [];
 
   for (let key in json.features) {
     let countryName = json.features[key].properties.name;
-    $("#countryList").append(`<option value="${countryName}">`);
+    countryList.push(countryName);
   }
+  countryList.sort();
+  countryList.forEach((country) => {
+    $("#countryList").append(`<option value="${country}">`);
+  });
 };
 
 getCountryList();
@@ -437,15 +442,30 @@ const getPlacesInfo = async (id, i) => {
       let link = json.link;
       let text = json.text;
 
+      let noImage =
+        "https://alexgo.co.uk/Projects/Gazetteer/images/no-image.png";
+
       let activeClass = i == 0 ? "carousel-item active" : "carousel-item";
 
-      $("#carousel-inner").append(`
+      $.get(preview)
+        .done(function () {
+          $("#carousel-inner").append(`
         <div class="${activeClass}">
             <a href="${link}" target="_blank"><button type="button" class="btn btn-outline-light">${name}</button></a><hr>
             <img style="max-width: 250px; max-height: 250px;" align="left" src="${preview}" class="align-self-center mr-3 img-thumbnail" alt="${name}">
             ${text}
         </div>
       `);
+        })
+        .fail(function () {
+          $("#carousel-inner").append(`
+        <div class="${activeClass}">
+            <a href="${link}" target="_blank"><button type="button" class="btn btn-outline-light">${name}</button></a><hr>
+            <img style="max-width: 150px; max-height: 150px;" align="left" src="${noImage}" class="align-self-center mr-3 img-thumbnail" alt="${name}">
+            ${text}
+        </div>
+      `);
+        });
 
       return json;
     } else {
@@ -475,7 +495,7 @@ const addMarkers = async (citiesNames, citiesCoords, citiesPopulation) => {
         let popUpMsg = `
         <h5>${citiesNames[i]} ${capital}</h5>
         <hr class="my-1">
-        <div class="media" id="popupCustom">
+        <div class="media">
           <div class="media-body text-nowrap">
               <span class="badge ${badge}">Temp</span> ${temp} °C <br>
               <span class="badge ${badge}">Humidity</span> ${humidity}% <br>
@@ -485,13 +505,30 @@ const addMarkers = async (citiesNames, citiesCoords, citiesPopulation) => {
         </div>
         <hr class="my-1">
         Population: <b>${numberWithCommas(citiesPopulation[i])}</b>
-        `; // @2x
+        <hr class="my-1">
+        <button type="button" class="btn btn-link btn-sm popupCitiesPlaces" data-toggle="modal" data-target="#placesModal" data-lng=${
+          citiesCoords[i][0]
+        } data-lat=${
+          citiesCoords[i][1]
+        } id="popupCity-${i}">Show famous places</button>
+        `; // @2x makes weather icons bigger
         marker =
           i == 0
             ? L.marker(citiesCoords[i], { icon: capitalMarker })
             : L.marker(citiesCoords[i], { icon: cityMarker });
         marker.addTo(myMap);
-        marker.bindPopup(popUpMsg, popUpOption);
+
+        // Binding popups to markers with custom message and style and listening to openpopup event
+        marker.bindPopup(popUpMsg, popUpOption).on("popupopen", function () {
+          $(".popupCitiesPlaces").on("click", function () {
+            let lng = $(this).attr("data-lng");
+            let lat = $(this).attr("data-lat");
+            $("#carousel-inner").html("");
+
+            // Pargins data for interesting places for selected city (using city coordinates)
+            getPlacesId(lng, lat);
+          });
+        });
 
         $(`#city-${i}`).html(citiesNames[i]);
         markers.push(marker);
@@ -500,6 +537,9 @@ const addMarkers = async (citiesNames, citiesCoords, citiesPopulation) => {
         i++;
       }
     }
+    // Opens popup for Capital after loading all markers
+    markers[0].openPopup();
+
     toggleSpinner(false);
   } catch (err) {
     console.log(err);
@@ -519,7 +559,6 @@ const resetDetails = (geojson, markers) => {
 
   markers.length = 0;
 
-  $("#carousel-inner").html("");
   for (let i = 0; i < 5; i++) {
     $(`#city-${i}`).html("");
   }
@@ -529,6 +568,7 @@ const resetDetails = (geojson, markers) => {
 const numberWithCommas = (num) =>
   num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
+// Open Leaflet Popup by clicking on cities buttons
 $("#cities button").on("click", function () {
   let id = $(this).attr("id");
   try {
