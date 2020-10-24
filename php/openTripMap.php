@@ -1,6 +1,6 @@
 <?php
 
-	$url='https://api.opentripmap.com/0.1/en/places/radius?radius=15000&lon=' . $_REQUEST['lon'] . '&lat=' . $_REQUEST['lat'] . '&kinds=interesting_places&src_geom=wikidata&src_attr=wikidata&rate=3h&format=json&limit=7&apikey=5ae2e3f221c38a28845f05b630f757a20fd6542940e20a3a2e9e9935';
+	$url='https://api.opentripmap.com/0.1/en/places/radius?radius=15000&lon=' . $_REQUEST['lon'] . '&lat=' . $_REQUEST['lat'] . '&kinds=interesting_places&src_geom=wikidata&src_attr=wikidata&rate=3h&format=json&limit=5&apikey=5ae2e3f221c38a28845f05b630f757a20fd6542940e20a3a2e9e9935';
 
     $ch = curl_init();
     

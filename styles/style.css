@@ -95,6 +95,46 @@ input::-webkit-calendar-picker-indicator {
   text-shadow: none;
 }
 
+.carousel-inner button {
+  width: 99%;
+}
+
+/* Color scheme for Navbar */
+#navbar.navbar {
+  background-color: #d8d3cd;
+}
+
+.navbar-toggler {
+  background-color: #797a7e;
+}
+
+input#countrySearch {
+  background-color: #797a7e;
+  color: #d8d3cd;
+}
+
+#countrySearch::placeholder {
+  color: rgba(255,255,255, 0.5);
+}
+
+input#countrySearch:focus {   
+  border-color: #797a7e;
+  background-color: #797a7e;
+  color: #d8d3cd;
+  box-shadow: 0 0 0 0.2rem rgba(121,122,126,0.25);
+  outline: 0;
+}
+
+input#countrySearch:-webkit-autofill,
+input#countrySearch:-webkit-autofill:hover, 
+input#countrySearch:-webkit-autofill:focus {
+  -webkit-text-fill-color: #d8d3cd;
+  caret-color: #d8d3cd;
+  transition: background-color 500s ease-in-out 0s;
+}
+
+/* END Color scheme for Navbar */
+
 /* .carousel-control-prev-icon,
 .carousel-control-next-icon {
   background-color: rgb(52, 58, 64);
