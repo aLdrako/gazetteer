@@ -1,9 +1,8 @@
 // Variables
-let geojson = undefined;
-let markers = [];
+let countryFeature = undefined; // used for saving map feature (geojson, coords, layer, etc.)
+let markers = []; // used to hold city markers
 let curCountry = undefined; // used as switch to avoid fetching data if the same country is selected
-let searchBy = "click"; // used as a switch when searching country from the search field
-let selCountry = undefined; // selected country in search field
+let searchBy = "click"; // used as a switch when searching country by map click, search field or geolocation
 
 accessToken =
   "pk.eyJ1IjoicmF6aWVsYWthYWxpZW4iLCJhIjoiY2tmOXppMmF0MHI3MjMwbGN2MG45bjJmeiJ9.HCBIa2UlWQUn9h5q7aOq_Q";
@@ -107,7 +106,7 @@ const onEachFeature = (feature, layer) => {
 const locationSuccess = (obj) => {
   let coords = obj.coords;
   searchBy = "geolocation";
-  onMapClick(coords);
+  getCountryData(coords);
 };
 
 const locationError = (err) => {
@@ -127,7 +126,7 @@ navigator.geolocation.getCurrentPosition(
 );
 
 // Handle event on map click
-const onMapClick = async (e) => {
+const getCountryData = async (e) => {
   let countryCodeA3,
     countryCodeA2,
     currency,
@@ -180,13 +179,13 @@ const onMapClick = async (e) => {
     }
 
     // Clearing previously selected outlines, markers, etc.
-    resetDetails(geojson, markers);
+    resetDetails(countryFeature, markers);
 
     // Get currency data
     getCurrency(currency);
 
     // Setting country outline
-    geojson = L.geoJSON(feature, {
+    countryFeature = L.geoJSON(feature, {
       style: layerStyle,
       onEachFeature,
     }).addTo(myMap);
@@ -204,13 +203,12 @@ const onMapClick = async (e) => {
 };
 
 // Get country on map click
-myMap.on("click", onMapClick);
+myMap.on("click", getCountryData);
 
 // Get country by search field
 $("#countrySearch").on("change", () => {
-  selCountry = $(`#countrySearch`).val();
   searchBy = "search";
-  onMapClick(selCountry);
+  getCountryData($(`#countrySearch`).val());
 });
 
 // Get country feature for outline
@@ -297,6 +295,8 @@ const getCountryInfo = async (codeA3) => {
       $("#area").html(numberWithCommas(area));
       $("#countryFlag").attr("src", flag);
 
+      $(`#countrySearch`).val(countryName);
+
       return {
         countryCodeA2,
         currency,
@@ -380,20 +380,6 @@ const getCovidData = async (codeA3) => {
       let deaths = json.deaths;
       let difference = json.confirmed_diff;
 
-      let activePercent = Math.round(100 / (confirmed / active));
-      let recoveredPercent = Math.round(100 / (confirmed / recovered));
-      let deathsPercent = Math.round(100 / (confirmed / deaths));
-
-      $("#activeCovidBar")
-        .width(`${activePercent}%`)
-        .attr("aria-valuenow", activePercent);
-      $("#recoveredCovidBar")
-        .width(`${recoveredPercent}%`)
-        .attr("aria-valuenow", recoveredPercent);
-      $("#deathsCovidBar")
-        .width(`${deathsPercent}%`)
-        .attr("aria-valuenow", deathsPercent);
-
       $("#confirmedCovid").html(numberWithCommas(confirmed));
       $("#activeCovid").html(numberWithCommas(active));
       $("#recoveredCovid").html(numberWithCommas(recovered));
@@ -412,6 +398,7 @@ const getCovidData = async (codeA3) => {
 // Get famous places ids located in capital
 const getPlacesId = async (lat, lng) => {
   try {
+    toggleSpinnerGrow(true);
     let data = await fetch(`php/openTripMap.php?lon=${lng}&lat=${lat}`);
     if (data.ok) {
       let json = await data.json();
@@ -447,6 +434,10 @@ const getPlacesInfo = async (id, i) => {
 
       let activeClass = i == 0 ? "carousel-item active" : "carousel-item";
 
+      if (i == 1) {
+        toggleSpinnerGrow(false);
+      }
+
       $.get(preview)
         .done(function () {
           $("#carousel-inner").append(`
@@ -479,70 +470,81 @@ const getPlacesInfo = async (id, i) => {
 // Adding city markers
 const addMarkers = async (citiesNames, citiesCoords, citiesPopulation) => {
   let i = 0;
+  let j = 0;
   let marker = undefined;
 
   try {
+    // Populate only first 5 cities
     while (i < citiesNames.length && i < 5) {
-      // Populate only first 5 cities
-      if (citiesCoords.length != 1) {
-        let { temp, humidity, wind, icon } = await getWeather(
-          citiesCoords[i][0],
-          citiesCoords[i][1]
-        );
-        let capital = i == 0 ? `<small class="text-muted">Capital</small>` : ``;
-        let badge = i == 0 ? "badge-dark" : "badge-light";
-        popUpOption = i == 0 ? popUpOptionsCapital : popUpOptionsCity;
-        let popUpMsg = `
-        <h5>${citiesNames[i]} ${capital}</h5>
-        <hr class="my-1">
-        <div class="media">
-          <div class="media-body text-nowrap">
-              <span class="badge ${badge}">Temp</span> ${temp} °C <br>
-              <span class="badge ${badge}">Humidity</span> ${humidity}% <br>
-              <span class="badge ${badge}">Wind</span> ${wind} m/s
-          </div>
-          <img src="https://openweathermap.org/img/wn/${icon}.png" alt="Weather Icon">
-        </div>
-        <hr class="my-1">
-        Population: <b>${numberWithCommas(citiesPopulation[i])}</b>
-        <hr class="my-1">
-        <button type="button" class="btn btn-link btn-sm popupCitiesPlaces" data-toggle="modal" data-target="#placesModal" data-lng=${
-          citiesCoords[i][0]
-        } data-lat=${
-          citiesCoords[i][1]
-        } id="popupCity-${i}">Show famous places</button>
-        `; // @2x makes weather icons bigger
-        marker =
-          i == 0
-            ? L.marker(citiesCoords[i], { icon: capitalMarker })
-            : L.marker(citiesCoords[i], { icon: cityMarker });
-        marker.addTo(myMap);
+      // Adding markers to map
+      marker =
+        i == 0
+          ? L.marker(citiesCoords[i], { icon: capitalMarker })
+          : L.marker(citiesCoords[i], { icon: cityMarker });
+      marker.addTo(myMap);
 
-        // Binding popups to markers with custom message and style and listening to openpopup event
-        marker.bindPopup(popUpMsg, popUpOption).on("popupopen", function () {
-          $(".popupCitiesPlaces").on("click", function () {
-            let lng = $(this).attr("data-lng");
-            let lat = $(this).attr("data-lat");
-            $("#carousel-inner").html("");
-
-            // Pargins data for interesting places for selected city (using city coordinates)
-            getPlacesId(lng, lat);
-          });
-        });
-
-        $(`#city-${i}`).html(citiesNames[i]);
-        markers.push(marker);
-        i++;
-      } else {
-        i++;
-      }
+      $(`#city-${i}`).html(citiesNames[i]);
+      markers.push(marker);
+      i++;
     }
-    // Opens popup for Capital after loading all markers
-    markers[0].openPopup();
+
+    markers.forEach((marker) => {
+      addPopup(marker, j, citiesNames[j], citiesCoords[j], citiesPopulation[j]);
+      j++;
+    });
 
     toggleSpinner(false);
   } catch (err) {
     console.log(err);
+  }
+};
+
+// Binding popups with information to markers
+const addPopup = async (marker, i, cityName, cityCoord, cityPopulation) => {
+  let { temp, humidity, wind, icon } = await getWeather(
+    cityCoord[0],
+    cityCoord[1]
+  );
+
+  // Defining Popup style
+  let capital = i == 0 ? `<small class="text-muted">Capital</small>` : ``;
+  let badge = i == 0 ? "badge-dark" : "badge-light";
+  popUpOption = i == 0 ? popUpOptionsCapital : popUpOptionsCity;
+
+  // Defining Popup message
+  let popUpMsg = `
+  <h5>${cityName} ${capital}</h5>
+  <hr class="my-1">
+  <div class="media">
+    <div class="media-body text-nowrap">
+        <span class="badge ${badge}">Temp</span> ${temp} °C <br>
+        <span class="badge ${badge}">Humidity</span> ${humidity}% <br>
+        <span class="badge ${badge}">Wind</span> ${wind} m/s
+    </div>
+    <img src="https://openweathermap.org/img/wn/${icon}.png" alt="Weather Icon">
+  </div>
+  <hr class="my-1">
+  Population: <b>${numberWithCommas(cityPopulation)}</b>
+  <hr class="my-1">
+  <button type="button" class="btn btn-link btn-sm popupCitiesPlaces" data-toggle="modal" data-target="#placesModal" data-lng=${
+    cityCoord[0]
+  } data-lat=${cityCoord[1]} id="popupCity-${i}">Show famous places</button>
+  `; // Adding @2x to img src makes weather icons bigger
+
+  // Binding popups to markers with custom message and style and listening to openpopup event
+  marker.bindPopup(popUpMsg, popUpOption).on("popupopen", function () {
+    $(".popupCitiesPlaces").on("click", function () {
+      let lng = $(this).attr("data-lng");
+      let lat = $(this).attr("data-lat");
+      $("#carousel-inner").html("");
+
+      // Parsing data of interesting places
+      getPlacesId(lng, lat);
+    });
+  });
+  if (i == 0) {
+    // Opens popup for Capital after adding all markers
+    marker.openPopup();
   }
 };
 
