@@ -75,6 +75,7 @@ body {
 #collapseCountryInfo.collapsing {
   background-color: rgb(52, 58, 64);
   color: white;
+  box-shadow: 0 -0.5rem 1rem rgba(0,0,0,0.50), inset 0 .5rem 1rem -0.5rem rgba(121,122,126,0.5);
 }
 
 #collapseCountryInfo .btn-outline-light,
@@ -102,14 +103,15 @@ input::-webkit-calendar-picker-indicator {
 /* Color scheme for Navbar */
 #navbar.navbar {
   background-color: #d8d3cd;
+  border-bottom: 1px solid rgba(121,122,126,0.5);
 }
 
 .navbar-toggler {
-  background-color: #797a7e;
+  background-color: rgb(52, 58, 64);
 }
 
 input#countrySearch {
-  background-color: #797a7e;
+  background-color: rgb(52, 58, 64);
   color: #d8d3cd;
 }
 
@@ -118,8 +120,8 @@ input#countrySearch {
 }
 
 input#countrySearch:focus {   
-  border-color: #797a7e;
-  background-color: #797a7e;
+  border-color: rgb(52, 58, 64);
+  background-color: rgb(52, 58, 64);
   color: #d8d3cd;
   box-shadow: 0 0 0 0.2rem rgba(121,122,126,0.25);
   outline: 0;

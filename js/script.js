@@ -17,3 +17,7 @@ $('#countrySearch').on('click', function (e) {
 function toggleSpinner(toggle) {
     !toggle ? $("#spinner").addClass("d-none") : $("#spinner").removeClass("d-none");
 }
+
+function toggleSpinnerGrow(toggle) {
+  !toggle ? $("#spinner-grow").addClass("d-none") : $("#spinner-grow").removeClass("d-none");
+}
