@@ -408,6 +408,16 @@ const getPlacesId = async (lat, lng) => {
         await getPlacesInfo(json.xid[i], i);
         i++;
       }
+
+      if (json.xid.length >= 1) {
+        toggleSpinnerGrow(false);
+      } else {
+        toggleSpinnerGrow(false);
+        $("#carousel-inner").append(`
+        <div class="carousel-item active text-center">No famous places found <i class="far fa-frown"></i></div>
+        `);
+      }
+
       return json;
     } else {
       throw "No response from the server!";
@@ -433,10 +443,6 @@ const getPlacesInfo = async (id, i) => {
         "https://alexgo.co.uk/Projects/Gazetteer/images/no-image.png";
 
       let activeClass = i == 0 ? "carousel-item active" : "carousel-item";
-
-      if (i == 1) {
-        toggleSpinnerGrow(false);
-      }
 
       $.get(preview)
         .done(function () {
@@ -507,28 +513,30 @@ const addPopup = async (marker, i, cityName, cityCoord, cityPopulation) => {
   );
 
   // Defining Popup style
-  let capital = i == 0 ? `<small class="text-muted">Capital</small>` : ``;
-  let badge = i == 0 ? "badge-dark" : "badge-light";
   popUpOption = i == 0 ? popUpOptionsCapital : popUpOptionsCity;
 
   // Defining Popup message
   let popUpMsg = `
-  <h5>${cityName} ${capital}</h5>
+  <h5 class="text-center">${cityName}</h5>
   <hr class="my-1">
   <div class="media">
     <div class="media-body text-nowrap">
-        <span class="badge ${badge}">Temp</span> ${temp} °C <br>
-        <span class="badge ${badge}">Humidity</span> ${humidity}% <br>
-        <span class="badge ${badge}">Wind</span> ${wind} m/s
+      <i class="fas fa-temperature-low" title="Temperature"> &ndash;</i> ${temp} °C <br>
+      <i class="fas fa-tint" title="Humidity"></i><i class="fas fa-percentage fa-xs" title="Humidity"> &ndash;</i> ${humidity}% <br>
+      <i class="fas fa-wind" title="Wind"> &ndash;</i> ${wind} m/s
     </div>
     <img src="https://openweathermap.org/img/wn/${icon}.png" alt="Weather Icon">
   </div>
   <hr class="my-1">
-  Population: <b>${numberWithCommas(cityPopulation)}</b>
+  <i class="fas fa-user-friends" title="Population"> &ndash;</i> <b>${numberWithCommas(
+    cityPopulation
+  )}</b>
   <hr class="my-1">
   <button type="button" class="btn btn-link btn-sm popupCitiesPlaces" data-toggle="modal" data-target="#placesModal" data-lng=${
     cityCoord[0]
-  } data-lat=${cityCoord[1]} id="popupCity-${i}">Show famous places</button>
+  } data-lat=${
+    cityCoord[1]
+  } id="popupCity-${i}"><i class="fas fa-landmark"> Famous places</i></button>
   `; // Adding @2x to img src makes weather icons bigger
 
   // Binding popups to markers with custom message and style and listening to openpopup event
