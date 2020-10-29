@@ -18,6 +18,16 @@
     $output['preview'] = $decode['preview']['source'];
     $output['link'] = $decode['wikipedia'];
     $output['text'] = $decode['wikipedia_extracts']['text'];
+
+    $image_url = $decode['preview']['source'];
+    
+    $image_type_check = @exif_imagetype($image_url);
+    
+    if (strpos($http_response_header[0], "403") || strpos($http_response_header[0], "404") || strpos($http_response_header[0], "302") || strpos($http_response_header[0], "301")) {
+        $output['preview'] = 'https://alexgo.co.uk/Projects/Gazetteer/images/no-image.png';
+    } else {
+        $output['preview'] = $decode['preview']['source'];
+    }
 	
 	header('Content-Type: application/json; charset=UTF-8');
 

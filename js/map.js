@@ -192,9 +192,6 @@ const getCountryData = async (e) => {
 
     addMarkers(citiesNames, citiesCoords, citiesPopulation);
 
-    // Get ids of famous places located in specific capital
-    // getPlacesId(citiesCoords[0][0], citiesCoords[0][1]);
-
     curCountry = countryCodeA3;
   }
 
@@ -223,24 +220,6 @@ const getCountryFeature = async (codeA3) => {
 
   return json;
 };
-
-// Populate datalist with countries
-const getCountryList = async () => {
-  let data = await fetch("./php/countries/countries_small.geo.json");
-  let json = await data.json();
-  let countryList = [];
-
-  for (let key in json.features) {
-    let countryName = json.features[key].properties.name;
-    countryList.push(countryName);
-  }
-  countryList.sort();
-  countryList.forEach((country) => {
-    $("#countryList").append(`<option value="${country}">`);
-  });
-};
-
-getCountryList();
 
 // Get country code using search field
 const searchCountry = async (country) => {
@@ -282,12 +261,12 @@ const getCountryInfo = async (codeA3) => {
       let json = await data.json();
 
       let countryCodeA2 = json.alpha2Code;
-      let population = json.population;
+      let population = json.population != null ? json.population : "No data";
       let currency = json.currencies[0]["code"];
       let capital = json.capital;
       let flag = json.flag;
       let countryName = json.name;
-      let area = json.area;
+      let area = json.area != null ? json.area : "No data";
 
       $("#countryName").html(countryName);
       $("#capital").html(capital);
@@ -439,30 +418,15 @@ const getPlacesInfo = async (id, i) => {
       let link = json.link;
       let text = json.text;
 
-      let noImage =
-        "https://alexgo.co.uk/Projects/Gazetteer/images/no-image.png";
-
       let activeClass = i == 0 ? "carousel-item active" : "carousel-item";
 
-      $.get(preview)
-        .done(function () {
-          $("#carousel-inner").append(`
+      $("#carousel-inner").append(`
         <div class="${activeClass}">
             <a href="${link}" target="_blank"><button type="button" class="btn btn-outline-light">${name}</button></a><hr>
             <img style="max-width: 250px; max-height: 250px;" align="left" src="${preview}" class="align-self-center mr-3 img-thumbnail" alt="${name}">
             ${text}
         </div>
       `);
-        })
-        .fail(function () {
-          $("#carousel-inner").append(`
-        <div class="${activeClass}">
-            <a href="${link}" target="_blank"><button type="button" class="btn btn-outline-light">${name}</button></a><hr>
-            <img style="max-width: 150px; max-height: 150px;" align="left" src="${noImage}" class="align-self-center mr-3 img-thumbnail" alt="${name}">
-            ${text}
-        </div>
-      `);
-        });
 
       return json;
     } else {
