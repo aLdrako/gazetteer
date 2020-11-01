@@ -390,8 +390,10 @@ const getPlacesId = async (lat, lng) => {
 
       if (json.xid.length >= 1) {
         toggleSpinnerGrow(false);
+        $('.modal-body').css('height', '50vh');
       } else {
         toggleSpinnerGrow(false);
+        $('.modal-body').css('height', 'auto');
         $("#carousel-inner").append(`
         <div class="carousel-item active text-center">No famous places found <i class="far fa-frown"></i></div>
         `);
@@ -422,8 +424,8 @@ const getPlacesInfo = async (id, i) => {
 
       $("#carousel-inner").append(`
         <div class="${activeClass}">
-            <a href="${link}" target="_blank"><button type="button" class="btn btn-outline-light">${name}</button></a><hr>
-            <img style="max-width: 250px; max-height: 250px;" align="left" src="${preview}" class="align-self-center mr-3 img-thumbnail" alt="${name}">
+            <a class="item-link" href="${link}" target="_blank"><button type="button" class="btn btn-outline-light">${name}</button></a><hr>
+            <img style="max-width: 200px; max-height: 200px;" align="left" src="${preview}" class="align-self-center mr-3 img-thumbnail" alt="${name}">
             ${text}
         </div>
       `);
