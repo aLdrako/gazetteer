@@ -88,12 +88,32 @@ input::-webkit-calendar-picker-indicator {
   color: white;
 }
 
-.modal-content .close {
-  text-shadow: none;
+.carousel-item button {
+  width: 70%;
+  display: flex;
+  justify-content: center;
+  margin:0 auto;
 }
 
-.carousel-inner button {
-  width: 99%;
+a.item-link:link,
+a.item-link:visited,
+a.item-link:hover {
+  text-decoration: none;
+}
+
+.modal-body {
+  height: 50vh;
+  overflow-y: auto;
+}
+
+.modal-dialog {
+  overflow-y: initial !important;
+}
+
+.close {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
 }
 
 /* Color scheme for Navbar */

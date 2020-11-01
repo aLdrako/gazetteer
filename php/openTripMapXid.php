@@ -15,9 +15,14 @@
     $decode = json_decode($result, true);
 
     $output['name'] = $decode['name'];
-    $output['preview'] = $decode['preview']['source'];
     $output['link'] = $decode['wikipedia'];
-    $output['text'] = $decode['wikipedia_extracts']['text'];
+
+    if (strlen($decode['wikipedia_extracts']['text']) > 0) {
+        $output['text'] = $decode['wikipedia_extracts']['text'];
+    } else {
+        $output['text'] = "No info...";
+    }
+    
 
     $image_url = $decode['preview']['source'];
     
