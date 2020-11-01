@@ -390,7 +390,6 @@ const getPlacesId = async (lat, lng) => {
 
       if (json.xid.length >= 1) {
         toggleSpinnerGrow(false);
-        $('.modal-body').css('height', '50vh');
       } else {
         toggleSpinnerGrow(false);
         $('.modal-body').css('height', 'auto');
@@ -398,8 +397,6 @@ const getPlacesId = async (lat, lng) => {
         <div class="carousel-item active text-center">No famous places found <i class="far fa-frown"></i></div>
         `);
       }
-
-      return json;
     } else {
       throw "No response from the server!";
     }
@@ -429,8 +426,6 @@ const getPlacesInfo = async (id, i) => {
             ${text}
         </div>
       `);
-
-      return json;
     } else {
       throw "No response from the server!";
     }

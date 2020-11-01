@@ -65,6 +65,16 @@ body {
   font-size: .9rem;
 }
 
+.leaflet-top.leaflet-left,
+.leaflet-top.leaflet-right {
+  top: 1.5rem;
+}
+
+.leaflet-bottom.leaflet-right {
+  position: fixed;
+  top: 4.5rem;
+}
+
 /* Bootsrap override */
 
 #collapseCountryInfo.collapse,
@@ -105,6 +115,12 @@ a.item-link:hover {
   height: 50vh;
   overflow-y: auto;
 }
+
+@media (min-width: 576px) { 
+  .modal-body {
+    height: 40vh;
+  }
+ }
 
 .modal-dialog {
   overflow-y: initial !important;
