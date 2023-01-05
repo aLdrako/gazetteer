@@ -332,7 +332,7 @@ const getWeather = async (lat, lng) => {
 const getCurrency = async (cur) => {
   try {
     let data = await fetch(
-      `https://openexchangerates.org/api/latest.json?app_id=9065944107c946019eff984d50954d33`
+      `https://openexchangerates.org/api/latest.json?app_id=10ce25eb301844099947e618271e570e`
     );
     if (data.ok) {
       let json = await data.json();
