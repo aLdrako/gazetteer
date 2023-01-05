@@ -22,7 +22,7 @@ The ability to deploy the following will be required to complete this project:
 The following third party APIs are recommended (and all of them have restricted limits for free plans) but you may decide to use others that you are already familiar with or have identified as suitable replacements:
  - OpenCage
  - Open Weather
- - Geonames (register at http://www.geonames.org/login, activate your account and then login and enable web services)
+ - Geonames
  - Rest Countries
  - Open Exchange Rates
 
