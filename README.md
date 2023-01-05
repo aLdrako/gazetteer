@@ -1,4 +1,4 @@
-<img src="favicon.ico" alt="logo" width="60px" style="margin-top: 20px;"/>
+<img src="images/logo.png" alt="logo" width="60px" style="margin-top: 20px;"/>
 
 # Gazetteer
 
