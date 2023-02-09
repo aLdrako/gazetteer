@@ -482,14 +482,14 @@ const addPopup = async (marker, i, cityName, cityCoord, cityPopulation) => {
   <hr class="my-1">
   <div class="media">
     <div class="media-body text-nowrap">
-      <i class="fas fa-temperature-low" title="Temperature"> &ndash;</i> ${temp} °C <br>
-      <i class="fas fa-tint" title="Humidity"></i><i class="fas fa-percentage fa-xs" title="Humidity"> &ndash;</i> ${humidity}% <br>
-      <i class="fas fa-wind" title="Wind"> &ndash;</i> ${wind} m/s
+      <i class="fas fa-temperature-low" title="Temperature"> </i> ${temp} °C <br>
+      <i class="fas fa-tint" title="Humidity"></i> ${humidity}% <br>
+      <i class="fas fa-wind" title="Wind"> </i> ${wind} m/s
     </div>
     <img src="https://openweathermap.org/img/wn/${icon}.png" alt="Weather Icon">
   </div>
   <hr class="my-1">
-  <i class="fas fa-user-friends" title="Population"> &ndash;</i> <b>${numberWithCommas(
+  <i class="fas fa-user-friends" title="Population"> </i> <b>${numberWithCommas(
     cityPopulation
   )}</b>
   <hr class="my-1">

@@ -22,17 +22,17 @@
     } else {
         $output['text'] = "No info...";
     }
-    
 
     $image_url = $decode['preview']['source'];
     
     $image_type_check = @exif_imagetype($image_url);
     
-    if (strpos($http_response_header[0], "403") || strpos($http_response_header[0], "404") || strpos($http_response_header[0], "302") || strpos($http_response_header[0], "301")) {
-        $output['preview'] = '/Projects/Gazetteer/images/no-image.png';
-    } else {
-        $output['preview'] = $decode['preview']['source'];
-    }
+//    if (strpos($http_response_header[0], "403") || strpos($http_response_header[0], "404") || strpos($http_response_header[0], "302") || strpos($http_response_header[0], "301")) {
+//        $output['preview'] = '/Projects/Gazetteer/images/no-image.png';
+//    } else {
+//        $output['preview'] = $decode['preview']['source'];
+//    }
+    $output['preview'] = $decode['preview']['source'];
 	
 	header('Content-Type: application/json; charset=UTF-8');
 
